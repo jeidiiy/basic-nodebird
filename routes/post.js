@@ -18,14 +18,14 @@ try {
 const upload = multer({
   storage: multer.diskStorage({
     destination(req, file, cb) {
-      cb(null, 'uploads/')
+      cb(null, 'uploads/');
     },
     filename(req, file, cb) {
       const ext = path.extname(file.originalname);
       cb(null, path.basename(file.originalname, ext) + Date.now() + ext);
     },
   }),
-  limits: { fileSize: 5 * 1024 * 1024 }
+  limits: { fileSize: 5 * 1024 * 1024 },
 });
 
 router.post('/img', isLoggedIn, upload.single('img'), (req, res) => {
@@ -39,7 +39,7 @@ router.post('/', isLoggedIn, upload2.none(), async (req, res, next) => {
     const post = await Post.create({
       content: req.body.content,
       img: req.body.url,
-      UserId: req.user.id
+      UserId: req.user.id,
     });
     const hashtags = req.body.content.match(/#[^s#]+/g);
     if (hashtags) {
@@ -47,12 +47,22 @@ router.post('/', isLoggedIn, upload2.none(), async (req, res, next) => {
         hashtags.map(tag => {
           return Hashtag.findOrCreate({
             where: { title: tag.slice(1).toLowerCase() },
-          })
+          });
         }),
       );
-      await post.addHashtags(result.map(r => r[0]))
+      await post.addHashtags(result.map(r => r[0]));
     }
     res.redirect('/');
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+});
+
+router.delete('/:id', isLoggedIn, async (req, res, next) => {
+  try {
+    await Post.destroy({ where: { id: parseInt(req.params.id, 10) } });
+    res.sendStatus(200);
   } catch (err) {
     console.error(err);
     next(err);
