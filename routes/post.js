@@ -5,6 +5,7 @@ const fs = require('fs');
 
 const { Post, Hashtag } = require('../models');
 const { isLoggedIn } = require('./middlewares');
+const { removePost } = require('../controllers/post');
 
 const router = express.Router();
 
@@ -59,14 +60,6 @@ router.post('/', isLoggedIn, upload2.none(), async (req, res, next) => {
   }
 });
 
-router.delete('/:id', isLoggedIn, async (req, res, next) => {
-  try {
-    await Post.destroy({ where: { id: parseInt(req.params.id, 10) } });
-    res.sendStatus(200);
-  } catch (err) {
-    console.error(err);
-    next(err);
-  }
-});
+router.delete('/:id', isLoggedIn, removePost);
 
 module.exports = router;
